@@ -13,5 +13,5 @@ public interface StatsRepository extends JpaRepository<Hit, Long> {
     /// отбрасывались либо оставались строки, в которых для пары uri, app значения ip одинаковое
     /// и чтоб потом они группировались. Если есть адекватное решение, то подскажите, пожалуйста, исправлю.
 
-    List<Hit> findAllByTimestampBetweenAndUriIn(LocalDateTime start, LocalDateTime end, List<String> uris);
+    List<Hit> findAllByTimestampBetween(LocalDateTime start, LocalDateTime end);
 }

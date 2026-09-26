@@ -21,7 +21,7 @@ public class StatsServiceImpl implements StatsService {
     public List<StatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         List<StatsDto> statsDtoList = new ArrayList<>();
         Map<List<String>, List<String>> statsData = new HashMap<>();
-        List<Hit> hitList = statsRepository.findAllByTimestampBetweenAndUriIn(start, end, uris);
+        List<Hit> hitList = statsRepository.findAllByTimestampBetween(start, end);
 
         for (Hit hit : hitList) {
             List<String> statsKey = List.of(hit.getApp(), hit.getUri());
@@ -29,7 +29,7 @@ public class StatsServiceImpl implements StatsService {
                 if (!unique || !statsData.get(statsKey).contains(hit.getIp())) {
                     statsData.get(statsKey).add(hit.getIp());
                 }
-            } else {
+            } else if (uris == null || uris.contains(statsKey.get(1))) {
                 statsData.put(statsKey, new ArrayList<>(List.of(hit.getIp())));
             }
         }
