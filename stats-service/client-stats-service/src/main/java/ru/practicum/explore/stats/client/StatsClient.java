@@ -43,6 +43,6 @@ public class StatsClient extends BaseClient {
         if (unique != null) {
             pathBuilder.queryParam("unique", unique);
         }
-        return get(pathBuilder.encode().toUriString());
+        return get(pathBuilder.toUriString());
     }
 }

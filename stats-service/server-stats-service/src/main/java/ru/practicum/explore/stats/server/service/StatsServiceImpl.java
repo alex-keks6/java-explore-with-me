@@ -22,17 +22,15 @@ public class StatsServiceImpl implements StatsService {
         }
 
         List<StatsDto> statsDtoList;
-
-        if (unique) {
-            statsDtoList = statsRepository.countUriAndAppByIpUnique(start, end);
-        } else {
-            statsDtoList = statsRepository.countUriAndAppByIp(start, end);
+        List<String> urisMaybeNull = null;
+        if (uris != null && !uris.isEmpty()) {
+            urisMaybeNull = uris;
         }
 
-        if (uris != null && !uris.isEmpty()) {
-            statsDtoList = statsDtoList.stream()
-                    .filter(statsDto -> uris.contains(statsDto.getUri()))
-                    .toList();
+        if (unique) {
+            statsDtoList = statsRepository.countUriAndAppByIpUnique(start, end, urisMaybeNull);
+        } else {
+            statsDtoList = statsRepository.countUriAndAppByIp(start, end, urisMaybeNull);
         }
 
         return statsDtoList;
