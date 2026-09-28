@@ -15,8 +15,8 @@ public class BaseClient {
         this.rest = rest;
     }
 
-    protected ResponseEntity<Object> get(String path, Map<String, Object> parameters) {
-        return makeAndSendRequest(HttpMethod.GET, path, parameters, null);
+    protected ResponseEntity<Object> get(String path) {
+        return makeAndSendRequest(HttpMethod.GET, path, null, null);
     }
 
     protected <T> ResponseEntity<Object> post(String path, T body) {
