@@ -45,4 +45,15 @@ public class ErrorController {
                 LocalDateTime.now()
         );
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleDataViolated(final org.hibernate.exception.ConstraintViolationException exception) {
+        return new ApiError(
+                HttpStatus.CONFLICT,
+                "Integrity constraint has been violated.",
+                exception.getMessage(),
+                LocalDateTime.now()
+        );
+    }
 }
