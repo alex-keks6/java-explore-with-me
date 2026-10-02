@@ -1,0 +1,39 @@
+package ru.practicum.explore.main.model;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Entity
+@Table(name = "compilations")
+public class Compilation {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @OneToMany(mappedBy = "compilation")
+    private List<Event> events;
+    @Column(name = "pinned", nullable = false)
+    private Boolean pinned;
+    @Column(name = "title", nullable = false)
+    private String title;
+
+    @Override
+    public final boolean equals(Object o) {
+        if (!(o instanceof Compilation that)) return false;
+        return getId() != null && getId().equals(that.getId());
+    }
+
+    @Override
+    public final int hashCode() {
+        return Compilation.class.hashCode();
+    }
+}
