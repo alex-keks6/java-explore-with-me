@@ -365,6 +365,7 @@ public class EventServiceImpl implements EventService {
 
     private Event takeEventByUserIdAndId(Long userId, Long eventId) {
         Optional<Event> optionalEvent = eventRepository.findByInitiatorIdAndId(userId, eventId);
+        
         if (optionalEvent.isEmpty()) {
             throw new DataNotFoundException("Event with id=" + eventId + " was not found");
         }
