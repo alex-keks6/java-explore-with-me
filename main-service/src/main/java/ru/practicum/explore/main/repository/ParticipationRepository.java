@@ -10,8 +10,7 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
 
     List<Participation> findAllByEventIdAndIdIn(Long eventId, List<Long> requestIds);
 
-    List<Participation> findAllByRegisterId(Long userId);
+    List<Participation> findAllByRequesterId(Long userId);
 
-    Boolean existsByRegisterIdAndEventId(Long userId, Long eventId);
-
+    Boolean existsByRequesterIdAndEventId(Long userId, Long eventId);
 }

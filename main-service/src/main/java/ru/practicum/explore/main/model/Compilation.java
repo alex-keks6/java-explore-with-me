@@ -3,6 +3,7 @@ package ru.practicum.explore.main.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -17,7 +18,8 @@ public class Compilation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @OneToMany(mappedBy = "compilation")
-    private List<Event> events;
+    @Builder.Default
+    private List<Event> events = new ArrayList<>();
     @Column(name = "pinned", nullable = false)
     private Boolean pinned;
     @Column(name = "title", nullable = false)

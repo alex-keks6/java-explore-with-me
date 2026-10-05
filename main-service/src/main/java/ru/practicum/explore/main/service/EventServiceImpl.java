@@ -1,8 +1,11 @@
 package ru.practicum.explore.main.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ru.practicum.explore.main.dto.EventFullDto;
 import ru.practicum.explore.main.dto.EventShortDto;
@@ -25,7 +28,9 @@ import ru.practicum.explore.main.request.EventRequestStatusUpdateResult;
 import ru.practicum.explore.main.request.UpdateEventAdminRequest;
 import ru.practicum.explore.main.request.UpdateEventUserRequest;
 import ru.practicum.explore.stats.client.HitClient;
+import ru.practicum.explore.stats.client.StatsClient;
 import ru.practicum.explore.stats.dto.HitDto;
+import ru.practicum.explore.stats.dto.StatsDto;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -37,10 +42,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
     private final HitClient hitClient;
+    private final StatsClient statsClient;
     private final UserService userService;
     private final CategoryService categoryService;
     private final EventRepository eventRepository;
     private final ParticipationRepository participationRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     public List<EventShortDto> getEvents(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
@@ -89,12 +96,7 @@ public class EventServiceImpl implements EventService {
         if (!event.getState().equals(EventState.PUBLISHED)) {
             throw new DataNotFoundException("Event must be published");
         }
-
-        EventFullDto eventFullDto = EventMapper.mapEventToFullDto(event);
-
-        event.setViews(event.getViews() + 1);
-        eventRepository.save(event);
-
+        
         HitDto hitDto = HitDto.builder()
                 .app("ewm-main-service")
                 .uri(request.getRequestURI())
@@ -104,7 +106,19 @@ public class EventServiceImpl implements EventService {
 
         hitClient.saveHit(hitDto);
 
-        return eventFullDto;
+        ResponseEntity<Object> statsDtoList = statsClient.getStats(LocalDateTime.now().minusYears(1), LocalDateTime.now().plusDays(1), 
+                List.of(request.getRequestURI()), true);
+
+        List<StatsDto> stats = objectMapper.convertValue(
+                statsDtoList.getBody(),
+                new TypeReference<>() {
+                });
+
+        event.setViews(stats.getFirst().getHits());
+        
+        eventRepository.save(event);
+        
+        return EventMapper.mapEventToFullDto(event);
     }
 
     @Override
@@ -274,13 +288,13 @@ public class EventServiceImpl implements EventService {
         Event event = takeEventById(eventId);
 
         if (!event.getState().equals(EventState.PENDING)
-                && updateEventAdminRequest.getStateAction().equals(EventStateUpdate.PUBLISH_EVENT)) {
+                && updateEventAdminRequest.getStateAction() == EventStateUpdate.PUBLISH_EVENT) {
             throw new DataValidationException("Cannot publish the event because it's not in the right state: " +
                     event.getState());
         }
 
         if (event.getState().equals(EventState.PUBLISHED)
-                && updateEventAdminRequest.getStateAction().equals(EventStateUpdate.REJECT_EVENT)) {
+                && updateEventAdminRequest.getStateAction() == EventStateUpdate.REJECT_EVENT) {
             throw new DataValidationException("Cannot reject the event because it's not in the right state: " +
                     event.getState());
         }
@@ -292,8 +306,7 @@ public class EventServiceImpl implements EventService {
 
         LocalDateTime publishedOn = LocalDateTime.now();
 
-        if (updateEventAdminRequest.getStateAction().equals(EventStateUpdate.PUBLISH_EVENT)
-                && eventDate.isBefore(publishedOn.plusHours(1))) {
+        if (eventDate.isBefore(publishedOn.plusHours(1))) {
             throw new DataValidationException("The eventDate is incorrect relative to the publishedOn. " +
                     "publishedOn=" + publishedOn + ", eventDate=" + eventDate);
         }
@@ -361,7 +374,7 @@ public class EventServiceImpl implements EventService {
     private void checkCorrectNewEventDate(LocalDateTime newEventDate) {
         LocalDateTime currentMoment = LocalDateTime.now();
 
-        if (newEventDate.isBefore(currentMoment.plusHours(2))) {
+        if (newEventDate != null && newEventDate.isBefore(currentMoment.plusHours(2))) {
             throw new DataValidationException("Field: eventDate. " +
                     "Error: должно содержать дату, которая еще не наступила. " +
                     "Value: " + newEventDate);

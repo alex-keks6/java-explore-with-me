@@ -24,7 +24,7 @@ public class Participation {
     private Event event;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User register;
+    private User requester;
     @Column(name = "status", nullable = false)
     private ParticipationStatus status;
 

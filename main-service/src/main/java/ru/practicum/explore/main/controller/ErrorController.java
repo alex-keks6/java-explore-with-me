@@ -2,6 +2,7 @@ package ru.practicum.explore.main.controller;
 
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -64,6 +65,17 @@ public class ErrorController {
         return new ApiError(
                 HttpStatus.CONFLICT,
                 "For the requested operation the conditions are not met.",
+                exception.getMessage(),
+                LocalDateTime.now()
+        );
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleDataValidation(final MethodArgumentNotValidException exception) {
+        return new ApiError(
+                HttpStatus.BAD_REQUEST,
+                "Incorrectly made request.",
                 exception.getMessage(),
                 LocalDateTime.now()
         );

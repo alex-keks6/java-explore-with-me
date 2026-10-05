@@ -10,6 +10,7 @@ import ru.practicum.explore.main.exception.DataValidationException;
 import ru.practicum.explore.main.mapper.ParticipationMapper;
 import ru.practicum.explore.main.model.Event;
 import ru.practicum.explore.main.model.Participation;
+import ru.practicum.explore.main.repository.EventRepository;
 import ru.practicum.explore.main.repository.ParticipationRepository;
 
 import java.time.LocalDateTime;
@@ -23,12 +24,13 @@ public class ParticipationServiceImpl implements ParticipationService {
     private final UserService userService;
     private final EventService eventService;
     private final ParticipationRepository participationRepository;
+    private final EventRepository eventRepository;
 
     @Override
     public List<ParticipationRequestDto> getOwnParticipationsByUser(Long userId) {
         userService.checkExistsUserById(userId);
 
-        List<Participation> participationList = participationRepository.findAllByRegisterId(userId);
+        List<Participation> participationList = participationRepository.findAllByRequesterId(userId);
         return participationList.stream()
                 .map(ParticipationMapper::mapParticipationToRequestDto)
                 .collect(Collectors.toList());
@@ -36,7 +38,7 @@ public class ParticipationServiceImpl implements ParticipationService {
 
     @Override
     public ParticipationRequestDto createParticipationByUser(Long userId, Long eventId) {
-        if (participationRepository.existsByRegisterIdAndEventId(userId, eventId)) {
+        if (participationRepository.existsByRequesterIdAndEventId(userId, eventId)) {
             throw new DataValidationException("Participation already exists");
         }
 
@@ -56,16 +58,18 @@ public class ParticipationServiceImpl implements ParticipationService {
 
         ParticipationStatus participationStatus;
 
-        if (event.getRequestModeration()) {
-            participationStatus = ParticipationStatus.PENDING;
-        } else {
+        if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
             participationStatus = ParticipationStatus.CONFIRMED;
+            event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+            event = eventRepository.save(event);
+        } else {
+            participationStatus = ParticipationStatus.PENDING;
         }
 
         Participation participation = Participation.builder()
                 .created(LocalDateTime.now())
                 .event(event)
-                .register(userService.takeUserById(userId))
+                .requester(userService.takeUserById(userId))
                 .status(participationStatus)
                 .build();
 
