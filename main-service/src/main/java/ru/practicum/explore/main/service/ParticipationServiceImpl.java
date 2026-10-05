@@ -80,7 +80,7 @@ public class ParticipationServiceImpl implements ParticipationService {
     public ParticipationRequestDto cancelOwnParticipationByUser(Long userId, Long requestId) {
         Participation participation = takeParticipationById(requestId);
 
-        participation.setStatus(ParticipationStatus.REJECTED);
+        participation.setStatus(ParticipationStatus.CANCELED);
 
         return ParticipationMapper.mapParticipationToRequestDto(participationRepository.save(participation));
     }

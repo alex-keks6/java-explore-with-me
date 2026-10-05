@@ -11,10 +11,8 @@ import ru.practicum.explore.main.dto.EventFullDto;
 import ru.practicum.explore.main.dto.EventShortDto;
 import ru.practicum.explore.main.dto.NewEventDto;
 import ru.practicum.explore.main.dto.ParticipationRequestDto;
-import ru.practicum.explore.main.enums.EventState;
-import ru.practicum.explore.main.enums.EventStateUpdate;
-import ru.practicum.explore.main.enums.ParticipationStatus;
-import ru.practicum.explore.main.enums.Sort;
+import ru.practicum.explore.main.enums.*;
+import ru.practicum.explore.main.exception.DataBadRequestException;
 import ru.practicum.explore.main.exception.DataNotFoundException;
 import ru.practicum.explore.main.exception.DataValidationException;
 import ru.practicum.explore.main.mapper.EventMapper;
@@ -250,21 +248,29 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        Long freeParticipants = event.getParticipantLimit() - participationConfirmedCount;
-
-        for (Participation participation : participationList) {
-            if (freeParticipants > 0) {
-                participation.setStatus(ParticipationStatus.CONFIRMED);
-                result.getConfirmedRequests().add(ParticipationMapper.mapParticipationToRequestDto(participation));
-                freeParticipants--;
-            } else {
+        if (eventRequestStatusUpdateRequest.getStatus() == ParticipationUpdateStatus.REJECTED) {
+            for (Participation participation : participationList) {
                 participation.setStatus(ParticipationStatus.REJECTED);
                 result.getRejectedRequests().add(ParticipationMapper.mapParticipationToRequestDto(participation));
             }
+        } else {
+            Long freeParticipants = event.getParticipantLimit() - participationConfirmedCount;
+
+            for (Participation participation : participationList) {
+                if (freeParticipants > 0) {
+                    participation.setStatus(ParticipationStatus.CONFIRMED);
+                    result.getConfirmedRequests().add(ParticipationMapper.mapParticipationToRequestDto(participation));
+                    freeParticipants--;
+                } else {
+                    participation.setStatus(ParticipationStatus.REJECTED);
+                    result.getRejectedRequests().add(ParticipationMapper.mapParticipationToRequestDto(participation));
+                }
+            }
+            event.setConfirmedRequests(event.getConfirmedRequests() + result.getConfirmedRequests().size());
+            eventRepository.save(event);
         }
 
-        event.setConfirmedRequests(event.getConfirmedRequests() + result.getConfirmedRequests().size());
-        eventRepository.save(event);
+        participationRepository.saveAll(participationList);
 
         return result;
     }
@@ -307,7 +313,7 @@ public class EventServiceImpl implements EventService {
         LocalDateTime publishedOn = LocalDateTime.now();
 
         if (eventDate.isBefore(publishedOn.plusHours(1))) {
-            throw new DataValidationException("The eventDate is incorrect relative to the publishedOn. " +
+            throw new DataBadRequestException("The eventDate is incorrect relative to the publishedOn. " +
                     "publishedOn=" + publishedOn + ", eventDate=" + eventDate);
         }
 
@@ -376,7 +382,7 @@ public class EventServiceImpl implements EventService {
         LocalDateTime currentMoment = LocalDateTime.now();
 
         if (newEventDate != null && newEventDate.isBefore(currentMoment.plusHours(2))) {
-            throw new DataValidationException("Field: eventDate. " +
+            throw new DataBadRequestException("Field: eventDate. " +
                     "Error: должно содержать дату, которая еще не наступила. " +
                     "Value: " + newEventDate);
         }
