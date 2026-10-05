@@ -96,7 +96,7 @@ public class EventServiceImpl implements EventService {
         if (!event.getState().equals(EventState.PUBLISHED)) {
             throw new DataNotFoundException("Event must be published");
         }
-        
+
         HitDto hitDto = HitDto.builder()
                 .app("ewm-main-service")
                 .uri(request.getRequestURI())
@@ -106,8 +106,8 @@ public class EventServiceImpl implements EventService {
 
         hitClient.saveHit(hitDto);
 
-        ResponseEntity<Object> statsDtoList = statsClient.getStats(LocalDateTime.now().minusYears(1), LocalDateTime.now().plusDays(1), 
-                List.of(request.getRequestURI()), true);
+        ResponseEntity<Object> statsDtoList = statsClient.getStats(LocalDateTime.now().minusYears(1),
+                LocalDateTime.now().plusDays(1), List.of(request.getRequestURI()), true);
 
         List<StatsDto> stats = objectMapper.convertValue(
                 statsDtoList.getBody(),
@@ -115,9 +115,9 @@ public class EventServiceImpl implements EventService {
                 });
 
         event.setViews(stats.getFirst().getHits());
-        
+
         eventRepository.save(event);
-        
+
         return EventMapper.mapEventToFullDto(event);
     }
 
@@ -365,7 +365,7 @@ public class EventServiceImpl implements EventService {
 
     private Event takeEventByUserIdAndId(Long userId, Long eventId) {
         Optional<Event> optionalEvent = eventRepository.findByInitiatorIdAndId(userId, eventId);
-        
+
         if (optionalEvent.isEmpty()) {
             throw new DataNotFoundException("Event with id=" + eventId + " was not found");
         }
