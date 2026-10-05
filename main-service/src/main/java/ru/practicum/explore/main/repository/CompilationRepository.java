@@ -8,15 +8,17 @@ import java.util.List;
 
 public interface CompilationRepository extends JpaRepository<Compilation, Long> {
     @Query(value = "SELECT * " +
-            "FROM compilations " +
+            "FROM compilations AS comp " +
+            "ORDER BY comp.id " +
             "OFFSET :from " +
-            "LIMIT :size", 
+            "LIMIT :size",
             nativeQuery = true)
     List<Compilation> findAllWithOffsetAndLimit(Integer from, Integer size);
 
     @Query(value = "SELECT * " +
             "FROM compilations AS comp " +
             "WHERE comp.pinned = :pinned " +
+            "ORDER BY comp.id " +
             "OFFSET :from " +
             "LIMIT :size",
             nativeQuery = true)

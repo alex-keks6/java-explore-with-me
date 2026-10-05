@@ -1,5 +1,6 @@
-package ru.practicum.explore.main.dto;
+package ru.practicum.explore.main.request;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -8,11 +9,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class NewCategoryDto {
+public class NewUserRequest {
     @NotBlank
-    @Size(min = 1, max = 50)
+    @Email
+    @Size(min = 6, max = 254)
+    private String email;
+    @NotBlank
+    @Size(min = 2, max = 250)
     private String name;
 }

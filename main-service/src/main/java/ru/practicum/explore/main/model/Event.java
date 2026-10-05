@@ -1,15 +1,13 @@
 package ru.practicum.explore.main.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.practicum.explore.main.enums.EventState;
 
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -24,8 +22,9 @@ public class Event {
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
+    @Builder.Default
     @Column(name = "confirmed_requests", nullable = false)
-    private Long confirmedRequests;
+    private Long confirmedRequests = 0L;
     @Column(name = "created_on", nullable = false)
     private LocalDateTime createdOn;
     @Column(name = "description", nullable = false)
@@ -35,14 +34,15 @@ public class Event {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User initiator;
-    @ManyToOne
-    @JoinColumn(name = "location_id", nullable = false)
-    private Location location;
+    @Column(name = "lat", nullable = false)
+    private Float lat;
+    @Column(name = "lon", nullable = false)
+    private Float lon;
     @Column(name = "paid", nullable = false)
     private Boolean paid;
     @Column(name = "participant_limit", nullable = false)
     private Integer participantLimit;
-    @Column(name = "published_on", nullable = false)
+    @Column(name = "published_on")
     private LocalDateTime publishedOn;
     @Column(name = "request_moderation", nullable = false)
     private Boolean requestModeration;
@@ -51,12 +51,13 @@ public class Event {
     private EventState state;
     @Column(name = "title", nullable = false)
     private String title;
+    @Builder.Default
     @Column(name = "views", nullable = false)
-    private Long views;
+    private Long views = 0L;
     @ManyToOne
-    @JoinColumn(name = "compilation_id", nullable = false)
+    @JoinColumn(name = "compilation_id")
     private Compilation compilation;
-    
+
     @Override
     public final boolean equals(Object o) {
         if (!(o instanceof Event that)) return false;

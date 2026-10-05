@@ -1,12 +1,16 @@
 package ru.practicum.explore.main.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class EventShortDto {
     private String annotation;
     private CategoryDto category;

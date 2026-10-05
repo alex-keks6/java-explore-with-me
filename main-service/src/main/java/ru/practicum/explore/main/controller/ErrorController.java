@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.practicum.explore.main.exception.DataNotFoundException;
+import ru.practicum.explore.main.exception.DataValidationException;
 import ru.practicum.explore.main.model.ApiError;
 
 import java.time.LocalDateTime;
@@ -19,7 +20,7 @@ public class ErrorController {
         return new ApiError(
                 HttpStatus.BAD_REQUEST,
                 "Incorrectly made request.",
-                exception.getMessage(), 
+                exception.getMessage(),
                 LocalDateTime.now()
         );
     }
@@ -52,6 +53,17 @@ public class ErrorController {
         return new ApiError(
                 HttpStatus.CONFLICT,
                 "Integrity constraint has been violated.",
+                exception.getMessage(),
+                LocalDateTime.now()
+        );
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleDataValidation(final DataValidationException exception) {
+        return new ApiError(
+                HttpStatus.CONFLICT,
+                "For the requested operation the conditions are not met.",
                 exception.getMessage(),
                 LocalDateTime.now()
         );
