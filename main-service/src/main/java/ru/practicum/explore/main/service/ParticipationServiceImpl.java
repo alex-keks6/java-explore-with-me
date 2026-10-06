@@ -86,10 +86,7 @@ public class ParticipationServiceImpl implements ParticipationService {
     }
 
     private Participation takeParticipationById(Long requestId) {
-        Optional<Participation> optionalParticipation = participationRepository.findById(requestId);
-        if (optionalParticipation.isEmpty()) {
-            throw new DataNotFoundException("Request with id=" + requestId + " was not found");
-        }
-        return optionalParticipation.get();
+        return participationRepository.findById(requestId).orElseThrow(() ->
+                new DataNotFoundException("Request with id=" + requestId + " was not found"));
     }
 }

@@ -105,11 +105,8 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     private Compilation takeCompilationById(Long compId) {
-        Optional<Compilation> optionalCompilation = compilationRepository.findById(compId);
-        if (optionalCompilation.isEmpty()) {
-            throw new DataNotFoundException("Compilation with id=" + compId + " was not found");
-        }
-        return optionalCompilation.get();
+        return compilationRepository.findById(compId).orElseThrow(() ->
+                new DataNotFoundException("Compilation with id=" + compId + " was not found"));
     }
 
     private void updateCompilationAndEvents(Compilation compilation, List<Event> newEventList) {

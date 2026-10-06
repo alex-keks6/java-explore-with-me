@@ -65,11 +65,8 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Category takeCategoryById(Long categoryId) {
-        Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
-        if (optionalCategory.isEmpty()) {
-            throw new DataNotFoundException("Category with id=" + categoryId + " was not found");
-        }
-        return optionalCategory.get();
+        return categoryRepository.findById(categoryId).orElseThrow(() ->
+                new DataNotFoundException("Category with id=" + categoryId + " was not found"));
     }
 
     private void checkCategoryExistsById(Long categoryId) {

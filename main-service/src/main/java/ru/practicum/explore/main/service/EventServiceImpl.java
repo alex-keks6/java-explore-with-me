@@ -61,9 +61,8 @@ public class EventServiceImpl implements EventService {
                     searchParameter.getRangeStart(), searchParameter.getRangeEnd(), searchParameter.getOnlyAvailable(),
                     page).getContent();
         } else {
-            // TODO: выполнить запрос всего из сервиса статистики (по датам посомтреть комментарии ревьюера) 
-            // и уже из списка от статистики отобрать как-то чтоб в таком порядке бд искала подходящие записи.
-            
+            // Так как в бд больше не хранится информация о просмотрах, то теперь из бд данные берутся без сортировки
+            // и уже в сервисе сортируются. Если можно лучше, то скажите, исправлю.
             eventList = eventRepository.findAllByFilters(EventState.PUBLISHED, searchParameter.getText(), 
                     searchParameter.getCategories(), searchParameter.getPaid(), searchParameter.getRangeStart(), 
                     searchParameter.getRangeEnd(), searchParameter.getOnlyAvailable(), page).getContent();
@@ -364,20 +363,13 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event takeEventById(Long eventId) {
-        Optional<Event> optionalEvent = eventRepository.findById(eventId);
-        if (optionalEvent.isEmpty()) {
-            throw new DataNotFoundException("Event with id=" + eventId + " was not found");
-        }
-        return optionalEvent.get();
+        return eventRepository.findById(eventId).orElseThrow(() ->
+                new DataNotFoundException("Event with id=" + eventId + " was not found"));
     }
 
     private Event takeEventByUserIdAndId(Long userId, Long eventId) {
-        Optional<Event> optionalEvent = eventRepository.findByInitiatorIdAndId(userId, eventId);
-
-        if (optionalEvent.isEmpty()) {
-            throw new DataNotFoundException("Event with id=" + eventId + " was not found");
-        }
-        return optionalEvent.get();
+        return eventRepository.findByInitiatorIdAndId(userId, eventId).orElseThrow(() ->
+                new DataNotFoundException("Event with id=" + eventId + " was not found"));
     }
 
     private void checkCorrectNewEventDate(LocalDateTime newEventDate) {
