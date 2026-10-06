@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -33,6 +34,6 @@ public class Compilation {
 
     @Override
     public final int hashCode() {
-        return Compilation.class.hashCode();
+        return Objects.hash(getId());
     }
 }

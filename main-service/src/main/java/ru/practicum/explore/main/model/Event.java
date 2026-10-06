@@ -5,6 +5,7 @@ import lombok.*;
 import ru.practicum.explore.main.enums.EventState;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -51,9 +52,6 @@ public class Event {
     private EventState state;
     @Column(name = "title", nullable = false)
     private String title;
-    @Builder.Default
-    @Column(name = "views", nullable = false)
-    private Long views = 0L;
     @ManyToOne
     @JoinColumn(name = "compilation_id")
     private Compilation compilation;
@@ -66,6 +64,6 @@ public class Event {
 
     @Override
     public final int hashCode() {
-        return Event.class.hashCode();
+        return Objects.hash(getId());
     }
 }

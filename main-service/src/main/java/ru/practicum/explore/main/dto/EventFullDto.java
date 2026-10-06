@@ -3,10 +3,7 @@ package ru.practicum.explore.main.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 import ru.practicum.explore.main.enums.EventState;
 
@@ -14,6 +11,7 @@ import java.time.LocalDateTime;
 
 @Jacksonized
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -45,5 +43,6 @@ public class EventFullDto {
     private EventState state;
     @NotBlank
     private String title;
-    private Long views;
+    @Builder.Default
+    private Long views = 0L;
 }

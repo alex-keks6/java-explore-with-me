@@ -37,7 +37,6 @@ CREATE TABLE IF NOT EXISTS events (
     request_moderation BOOLEAN NOT NULL,
     current_state VARCHAR(128) NOT NULL,
     title VARCHAR(120) NOT NULL,
-    views BIGINT NOT NULL,
     compilation_id BIGINT,
     CONSTRAINT pk_events PRIMARY KEY (id),
     CONSTRAINT fk_events_to_categories FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE,

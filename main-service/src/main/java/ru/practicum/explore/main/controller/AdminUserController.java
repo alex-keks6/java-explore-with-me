@@ -16,10 +16,11 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Validated
-public class UserController {
+@RequestMapping(path = "/admin/users")
+public class AdminUserController {
     private final UserService userService;
 
-    @GetMapping("/admin/users")
+    @GetMapping
     public List<UserDto> getUsersByAdmin(@RequestParam(required = false) List<@Positive Long> ids,
                                          @PositiveOrZero
                                          @RequestParam(required = false, defaultValue = "0") Integer from,
@@ -28,16 +29,15 @@ public class UserController {
         return userService.getUsersByAdmin(ids, from, size);
     }
 
-    @PostMapping("/admin/users")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserDto createUserByAdmin(@Valid @RequestBody NewUserRequest newUserRequest) {
         return userService.createUserByAdmin(newUserRequest);
     }
 
-    @DeleteMapping("/admin/users/{userId}")
+    @DeleteMapping("/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUserByAdmin(@Positive @PathVariable Long userId) {
         userService.deleteUserByAdmin(userId);
     }
-
 }

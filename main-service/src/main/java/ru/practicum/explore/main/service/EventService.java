@@ -1,10 +1,7 @@
 package ru.practicum.explore.main.service;
 
 import jakarta.servlet.http.HttpServletRequest;
-import ru.practicum.explore.main.dto.EventFullDto;
-import ru.practicum.explore.main.dto.EventShortDto;
-import ru.practicum.explore.main.dto.NewEventDto;
-import ru.practicum.explore.main.dto.ParticipationRequestDto;
+import ru.practicum.explore.main.dto.*;
 import ru.practicum.explore.main.enums.Sort;
 import ru.practicum.explore.main.model.Event;
 import ru.practicum.explore.main.request.EventRequestStatusUpdateRequest;
@@ -16,9 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface EventService {
-    List<EventShortDto> getEvents(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
-                                  LocalDateTime rangeEnd, Boolean onlyAvailable, Sort sort, Integer from, Integer size,
-                                  HttpServletRequest request);
+    List<EventShortDto> getEvents(PublicEventSearchParameterDto searchParameter, HttpServletRequest request);
 
     EventFullDto getEvent(Long eventId, HttpServletRequest request);
 
@@ -36,8 +31,7 @@ public interface EventService {
                                                                 EventRequestStatusUpdateRequest
                                                                         eventRequestStatusUpdateRequest);
 
-    List<EventFullDto> getEventsByAdmin(List<Long> users, List<String> states, List<Long> categories,
-                                        LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size);
+    List<EventFullDto> getEventsByAdmin(AdminEventSearchParameterDto searchParameter);
 
     EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest updateEventAdminRequest);
 

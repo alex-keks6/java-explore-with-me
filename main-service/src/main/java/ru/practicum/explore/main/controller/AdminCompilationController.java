@@ -17,36 +17,23 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Validated
-public class CompilationController {
+@RequestMapping(path = "/admin/compilations")
+public class AdminCompilationController {
     private final CompilationService compilationService;
 
-    @GetMapping("/compilations")
-    public List<CompilationDto> getCompilations(@RequestParam(required = false) Boolean pinned,
-                                                @PositiveOrZero
-                                                @RequestParam(required = false, defaultValue = "0") Integer from,
-                                                @Positive
-                                                @RequestParam(required = false, defaultValue = "10") Integer size) {
-        return compilationService.getCompilations(pinned, from, size);
-    }
-
-    @GetMapping("/compilations/{compId}")
-    public CompilationDto getCompilation(@Positive @PathVariable Long compId) {
-        return compilationService.getCompilation(compId);
-    }
-
-    @PostMapping("/admin/compilations")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CompilationDto createCompilationByAdmin(@Valid @RequestBody NewCompilationDto newCompilationDto) {
         return compilationService.createCompilationByAdmin(newCompilationDto);
     }
 
-    @DeleteMapping("/admin/compilations/{compId}")
+    @DeleteMapping("/{compId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCompilationByAdmin(@Positive @PathVariable Long compId) {
         compilationService.deleteCompilationByAdmin(compId);
     }
 
-    @PatchMapping("/admin/compilations/{compId}")
+    @PatchMapping("/{compId}")
     public CompilationDto updateCompilationByAdmin(@Positive @PathVariable Long compId,
                                                    @Valid
                                                    @RequestBody UpdateCompilationRequest updateCompilationRequest) {

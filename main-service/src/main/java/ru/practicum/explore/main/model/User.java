@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Objects;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,6 +31,6 @@ public class User {
 
     @Override
     public final int hashCode() {
-        return User.class.hashCode();
+        return Objects.hash(getId());
     }
 }
