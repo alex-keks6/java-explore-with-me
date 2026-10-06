@@ -2,14 +2,12 @@ package ru.practicum.explore.main.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import ru.practicum.explore.main.dto.*;
-import ru.practicum.explore.main.enums.Sort;
 import ru.practicum.explore.main.model.Event;
 import ru.practicum.explore.main.request.EventRequestStatusUpdateRequest;
 import ru.practicum.explore.main.request.EventRequestStatusUpdateResult;
 import ru.practicum.explore.main.request.UpdateEventAdminRequest;
 import ru.practicum.explore.main.request.UpdateEventUserRequest;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface EventService {

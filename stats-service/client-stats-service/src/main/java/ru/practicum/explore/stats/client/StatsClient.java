@@ -3,10 +3,11 @@ package ru.practicum.explore.stats.client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
+import ru.practicum.explore.stats.dto.StatsDto;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -29,7 +30,7 @@ public class StatsClient extends BaseClient {
         this.statsUrl = serverUrl + API_PREFIX;
     }
 
-    public ResponseEntity<Object> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
+    public List<StatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_TIME_PATTERN);
 
         UriComponentsBuilder pathBuilder = UriComponentsBuilder.fromHttpUrl(statsUrl)
@@ -45,6 +46,10 @@ public class StatsClient extends BaseClient {
         }
 
         URI uri = pathBuilder.build().toUri();
-        return get(uri);
+
+
+        List<StatsDto> statsDtoList = get(uri, new ParameterizedTypeReference<>() {
+        });
+        return statsDtoList != null ? statsDtoList : List.of();
     }
 }

@@ -12,7 +12,6 @@ import ru.practicum.explore.main.repository.CategoryRepository;
 import ru.practicum.explore.main.repository.EventRepository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service

@@ -1,7 +1,7 @@
 package ru.practicum.explore.stats.server.service;
 
-import ru.practicum.explore.stats.dto.HitDto;
+import jakarta.servlet.http.HttpServletRequest;
 
 public interface HitService {
-    void saveHit(HitDto hitDto);
+    void saveHit(HttpServletRequest request);
 }

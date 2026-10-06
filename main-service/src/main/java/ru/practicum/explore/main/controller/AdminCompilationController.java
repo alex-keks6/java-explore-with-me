@@ -2,7 +2,6 @@ package ru.practicum.explore.main.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -11,8 +10,6 @@ import ru.practicum.explore.main.dto.CompilationDto;
 import ru.practicum.explore.main.dto.NewCompilationDto;
 import ru.practicum.explore.main.request.UpdateCompilationRequest;
 import ru.practicum.explore.main.service.CompilationService;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor

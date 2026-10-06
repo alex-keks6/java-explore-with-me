@@ -1,6 +1,5 @@
 package ru.practicum.explore.main.dto;
 
-import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

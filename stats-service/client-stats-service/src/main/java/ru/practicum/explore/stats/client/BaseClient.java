@@ -1,5 +1,6 @@
 package ru.practicum.explore.stats.client;
 
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -16,12 +17,8 @@ public class BaseClient {
         this.rest = rest;
     }
 
-    protected ResponseEntity<Object> get(String path) {
-        return makeAndSendRequest(HttpMethod.GET, path, null, null);
-    }
-
-    protected ResponseEntity<Object> get(URI uri) {
-        return makeAndSendRequest(HttpMethod.GET, uri, null, null);
+    protected <T> T get(URI uri, ParameterizedTypeReference<T> typeRef) {
+        return rest.exchange(uri, HttpMethod.GET, null, typeRef).getBody();
     }
 
     protected <T> ResponseEntity<Object> post(String path, T body) {
@@ -43,24 +40,6 @@ public class BaseClient {
             return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsByteArray());
         }
         return prepareStatsResponse(statsServiceResponse);
-    }
-
-    private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method, URI uri,
-                                                          @Nullable Map<String, Object> parameters, @Nullable T body) {
-        HttpEntity<T> requestEntity =
-                new HttpEntity<>(body, defaultHeaders());
-
-        try {
-            ResponseEntity<Object> response =
-                    rest.exchange(uri, method, requestEntity, Object.class);
-
-            return prepareStatsResponse(response);
-
-        } catch (HttpStatusCodeException e) {
-            return ResponseEntity
-                    .status(e.getStatusCode())
-                    .body(e.getResponseBodyAsByteArray());
-        }
     }
 
     private HttpHeaders defaultHeaders() {

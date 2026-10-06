@@ -36,8 +36,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "AND (cast(:rangeEnd as timestamp) IS NULL OR e.eventDate <= :rangeEnd) " +
             "AND (:onlyAvailable = false OR e.confirmedRequests < e.participantLimit)")
     Page<Event> findAllByFilters(EventState state, String text, List<Long> categories, Boolean paid,
-                                              LocalDateTime rangeStart, LocalDateTime rangeEnd,
-                                              Boolean onlyAvailable, Pageable pageable);
+                                 LocalDateTime rangeStart, LocalDateTime rangeEnd,
+                                 Boolean onlyAvailable, Pageable pageable);
 
     Boolean existsByCategoryId(Long categoryId);
 

@@ -11,7 +11,6 @@ import ru.practicum.explore.main.repository.UserRepository;
 import ru.practicum.explore.main.request.NewUserRequest;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service

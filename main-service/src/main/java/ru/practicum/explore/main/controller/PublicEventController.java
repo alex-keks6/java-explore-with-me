@@ -22,7 +22,7 @@ import java.util.List;
 @RequestMapping(path = "/events")
 public class PublicEventController {
     private final EventService eventService;
-    
+
     @GetMapping
     public List<EventShortDto> getEvents(@RequestParam(required = false) String text,
                                          @RequestParam(required = false) List<@Positive Long> categories,
@@ -38,7 +38,7 @@ public class PublicEventController {
                                          @Positive
                                          @RequestParam(required = false, defaultValue = "10") Integer size,
                                          HttpServletRequest request) {
-        PublicEventSearchParameterDto searchParameter = new PublicEventSearchParameterDto(text, categories, paid, 
+        PublicEventSearchParameterDto searchParameter = new PublicEventSearchParameterDto(text, categories, paid,
                 rangeStart, rangeEnd, onlyAvailable, sort, from, size);
         return eventService.getEvents(searchParameter, request);
     }
