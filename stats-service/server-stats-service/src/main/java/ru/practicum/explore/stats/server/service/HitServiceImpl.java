@@ -10,7 +10,7 @@ import ru.practicum.explore.stats.server.repository.HitRepository;
 @RequiredArgsConstructor
 public class HitServiceImpl implements HitService {
     private final HitRepository hitRepository;
-    
+
     @Override
     public void saveHit(HitDto hitDto) {
         hitRepository.save(HitMapper.mapDtoToHit(hitDto));
