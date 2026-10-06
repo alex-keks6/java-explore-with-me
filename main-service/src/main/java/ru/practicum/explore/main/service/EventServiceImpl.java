@@ -376,9 +376,10 @@ public class EventServiceImpl implements EventService {
             return;
         }
 
-        List<StatsDto> stats = getStatsDto(eventFullDto.getPublishedOn(), List.of(EVENT_URI));
+        List<StatsDto> stats = getStatsDto(eventFullDto.getPublishedOn(), List.of(EVENT_URI + "/"
+                + eventFullDto.getId()));
 
-        if (stats.getFirst() != null) {
+        if (stats != null && !stats.isEmpty()) {
             eventFullDto.setViews(stats.getFirst().getHits());
         }
     }
