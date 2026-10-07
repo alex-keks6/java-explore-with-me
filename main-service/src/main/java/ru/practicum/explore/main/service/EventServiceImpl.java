@@ -52,8 +52,6 @@ public class EventServiceImpl implements EventService {
                     searchParameter.getRangeStart(), searchParameter.getRangeEnd(), searchParameter.getOnlyAvailable(),
                     page).getContent();
         } else {
-            // Так как в бд больше не хранится информация о просмотрах, то теперь из бд данные берутся без сортировки
-            // и уже в сервисе сортируются. Если можно лучше, то скажите, исправлю.
             eventList = eventRepository.findAllByFilters(EventState.PUBLISHED, searchParameter.getText(),
                     searchParameter.getCategories(), searchParameter.getPaid(), searchParameter.getRangeStart(),
                     searchParameter.getRangeEnd(), searchParameter.getOnlyAvailable(), page).getContent();
