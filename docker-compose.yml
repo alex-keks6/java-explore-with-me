@@ -9,9 +9,9 @@ services:
       stats-db:
         condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/explorestatsdb
-      - SPRING_DATASOURCE_USERNAME=explorestatsuser
-      - SPRING_DATASOURCE_PASSWORD=explorestats12345
+      - SPRING_STATS_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/explorestatsdb
+      - SPRING_STATS_DATASOURCE_USERNAME=explorestatsuser
+      - SPRING_STATS_DATASOURCE_PASSWORD=explorestats12345
 
   stats-db:
     image: postgres:16.1
@@ -34,6 +34,15 @@ services:
     container_name: ewm-service
     ports:
       - "8080:8080"
+    depends_on:
+      ewm-db:
+        condition: service_healthy
+    environment:
+      - SPRING_EWM_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/exploreewmdb
+      - SPRING_EWM_DATASOURCE_USERNAME=exploreewmuser
+      - SPRING_EWM_DATASOURCE_PASSWORD=exploreewm12345
+      - STATS_SERVICE_URL=http://stats-server:9090
+      - MAIN_SERVICE_NAME=ewm-main-service
 
   ewm-db:
     image: postgres:16.1
@@ -44,3 +53,8 @@ services:
       - POSTGRES_PASSWORD=exploreewm12345
       - POSTGRES_USER=exploreewmuser
       - POSTGRES_DB=exploreewmdb
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10

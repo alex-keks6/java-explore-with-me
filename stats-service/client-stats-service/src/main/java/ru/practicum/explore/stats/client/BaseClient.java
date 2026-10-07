@@ -1,10 +1,12 @@
 package ru.practicum.explore.stats.client;
 
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -15,8 +17,8 @@ public class BaseClient {
         this.rest = rest;
     }
 
-    protected ResponseEntity<Object> get(String path) {
-        return makeAndSendRequest(HttpMethod.GET, path, null, null);
+    protected <T> T get(URI uri, ParameterizedTypeReference<T> typeRef) {
+        return rest.exchange(uri, HttpMethod.GET, null, typeRef).getBody();
     }
 
     protected <T> ResponseEntity<Object> post(String path, T body) {
