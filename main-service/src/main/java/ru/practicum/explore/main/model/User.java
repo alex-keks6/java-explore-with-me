@@ -22,15 +22,4 @@ public class User {
     private String email;
     @Column(name = "name", nullable = false)
     private String name;
-
-    @Override
-    public final boolean equals(Object o) {
-        if (!(o instanceof User that)) return false;
-        return getId() != null && getId().equals(that.getId());
-    }
-
-    @Override
-    public final int hashCode() {
-        return Objects.hash(getId());
-    }
 }

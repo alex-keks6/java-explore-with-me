@@ -25,15 +25,4 @@ public class Compilation {
     private Boolean pinned;
     @Column(name = "title", nullable = false)
     private String title;
-
-    @Override
-    public final boolean equals(Object o) {
-        if (!(o instanceof Compilation that)) return false;
-        return getId() != null && getId().equals(that.getId());
-    }
-
-    @Override
-    public final int hashCode() {
-        return Objects.hash(getId());
-    }
 }

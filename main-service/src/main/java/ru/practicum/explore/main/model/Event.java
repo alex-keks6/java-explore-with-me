@@ -55,15 +55,4 @@ public class Event {
     @ManyToOne
     @JoinColumn(name = "compilation_id")
     private Compilation compilation;
-
-    @Override
-    public final boolean equals(Object o) {
-        if (!(o instanceof Event that)) return false;
-        return getId() != null && getId().equals(that.getId());
-    }
-
-    @Override
-    public final int hashCode() {
-        return Objects.hash(getId());
-    }
 }

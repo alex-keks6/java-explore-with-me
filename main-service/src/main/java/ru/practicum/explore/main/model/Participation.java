@@ -28,15 +28,4 @@ public class Participation {
     private User requester;
     @Column(name = "status", nullable = false)
     private ParticipationStatus status;
-
-    @Override
-    public final boolean equals(Object o) {
-        if (!(o instanceof Participation that)) return false;
-        return getId() != null && getId().equals(that.getId());
-    }
-
-    @Override
-    public final int hashCode() {
-        return Objects.hash(getId());
-    }
 }
