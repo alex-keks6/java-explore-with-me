@@ -4,7 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import ru.practicum.explore.main.enums.EventState;
+import ru.practicum.explore.main.enums.State;
 import ru.practicum.explore.main.model.Event;
 
 import java.time.LocalDateTime;
@@ -22,7 +22,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "AND (cast(:rangeEnd as timestamp) IS NULL OR e.eventDate <= :rangeEnd) " +
             "AND (:onlyAvailable = false OR e.confirmedRequests < e.participantLimit) " +
             "ORDER BY e.eventDate")
-    Page<Event> findAllByFiltersSortedByEventDate(EventState state, String text, List<Long> categories, Boolean paid,
+    Page<Event> findAllByFiltersSortedByEventDate(State state, String text, List<Long> categories, Boolean paid,
                                                   LocalDateTime rangeStart, LocalDateTime rangeEnd, Boolean onlyAvailable,
                                                   Pageable pageable);
 
@@ -35,7 +35,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "AND (cast(:rangeStart as timestamp) IS NULL OR e.eventDate >= :rangeStart) " +
             "AND (cast(:rangeEnd as timestamp) IS NULL OR e.eventDate <= :rangeEnd) " +
             "AND (:onlyAvailable = false OR e.confirmedRequests < e.participantLimit)")
-    Page<Event> findAllByFilters(EventState state, String text, List<Long> categories, Boolean paid,
+    Page<Event> findAllByFilters(State state, String text, List<Long> categories, Boolean paid,
                                  LocalDateTime rangeStart, LocalDateTime rangeEnd,
                                  Boolean onlyAvailable, Pageable pageable);
 

@@ -9,10 +9,13 @@ import ru.practicum.explore.main.enums.*;
 import ru.practicum.explore.main.exception.DataBadRequestException;
 import ru.practicum.explore.main.exception.DataNotFoundException;
 import ru.practicum.explore.main.exception.DataValidationException;
+import ru.practicum.explore.main.mapper.CommentMapper;
 import ru.practicum.explore.main.mapper.EventMapper;
 import ru.practicum.explore.main.mapper.ParticipationMapper;
+import ru.practicum.explore.main.model.Comment;
 import ru.practicum.explore.main.model.Event;
 import ru.practicum.explore.main.model.Participation;
+import ru.practicum.explore.main.repository.CommentRepository;
 import ru.practicum.explore.main.repository.EventRepository;
 import ru.practicum.explore.main.repository.ParticipationRepository;
 import ru.practicum.explore.main.request.*;
@@ -34,8 +37,10 @@ public class EventServiceImpl implements EventService {
     private final StatsClient statsClient;
     private final UserService userService;
     private final CategoryService categoryService;
+    private final CommentService commentService;
     private final EventRepository eventRepository;
     private final ParticipationRepository participationRepository;
+    private final CommentRepository commentRepository;
 
     @Override
     public List<EventShortDto> getEvents(PublicEventSearchParameterDto searchParameter, HttpServletRequest request) {
@@ -47,12 +52,12 @@ public class EventServiceImpl implements EventService {
                 searchParameter.getFrom() / searchParameter.getSize() : 0, searchParameter.getSize());
         List<Event> eventList;
         if (searchParameter.getSort().equals(Sort.EVENT_DATE)) {
-            eventList = eventRepository.findAllByFiltersSortedByEventDate(EventState.PUBLISHED,
+            eventList = eventRepository.findAllByFiltersSortedByEventDate(State.PUBLISHED,
                     searchParameter.getText(), searchParameter.getCategories(), searchParameter.getPaid(),
                     searchParameter.getRangeStart(), searchParameter.getRangeEnd(), searchParameter.getOnlyAvailable(),
                     page).getContent();
         } else {
-            eventList = eventRepository.findAllByFilters(EventState.PUBLISHED, searchParameter.getText(),
+            eventList = eventRepository.findAllByFilters(State.PUBLISHED, searchParameter.getText(),
                     searchParameter.getCategories(), searchParameter.getPaid(), searchParameter.getRangeStart(),
                     searchParameter.getRangeEnd(), searchParameter.getOnlyAvailable(), page).getContent();
         }
@@ -78,9 +83,7 @@ public class EventServiceImpl implements EventService {
     public EventFullDto getEvent(Long eventId, HttpServletRequest request) {
         Event event = takeEventById(eventId);
 
-        if (!event.getState().equals(EventState.PUBLISHED)) {
-            throw new DataNotFoundException("Event must be published");
-        }
+        checkEventIsPublished(event);
 
         EventFullDto eventFullDto = EventMapper.mapEventToFullDto(event);
 
@@ -89,6 +92,33 @@ public class EventServiceImpl implements EventService {
         setViewInEventFullDto(eventFullDto);
 
         return eventFullDto;
+    }
+
+    @Override
+    public List<CommentDto> getEventComments(Long eventId) {
+        Event event = takeEventById(eventId);
+
+        checkEventIsPublished(event);
+
+        List<Comment> commentList = commentRepository.findAllByEventIdAndStateOrderByPublishedOnDesc(eventId,
+                State.PUBLISHED);
+
+        return commentList.stream()
+                .map(CommentMapper::mapCommentToDto)
+                .toList();
+    }
+
+    @Override
+    public CommentDto getEventComment(Long eventId, Long commentId) {
+        Event event = takeEventById(eventId);
+        checkEventIsPublished(event);
+
+        Comment comment = commentService.takeCommentById(commentId);
+        if (comment.getState() != State.PUBLISHED) {
+            throw new DataNotFoundException("Comment must be published");
+        }
+
+        return CommentMapper.mapCommentToDto(comment);
     }
 
     @Override
@@ -114,7 +144,7 @@ public class EventServiceImpl implements EventService {
         event.setInitiator(userService.takeUserById(userId));
         event.setCategory(categoryService.takeCategoryById(newEventDto.getCategory()));
         event.setCreatedOn(LocalDateTime.now());
-        event.setState(EventState.PENDING);
+        event.setState(State.PENDING);
 
         return EventMapper.mapEventToFullDto(eventRepository.save(event));
     }
@@ -136,7 +166,7 @@ public class EventServiceImpl implements EventService {
 
         Event event = takeEventByUserIdAndId(userId, eventId);
 
-        if (event.getState().equals(EventState.PUBLISHED)) {
+        if (event.getState().equals(State.PUBLISHED)) {
             throw new DataValidationException("Only pending or canceled events can be changed");
         }
 
@@ -145,10 +175,10 @@ public class EventServiceImpl implements EventService {
         if (updateEventUserRequest.getStateAction() != null) {
             switch (updateEventUserRequest.getStateAction()) {
                 case SEND_TO_REVIEW:
-                    event.setState(EventState.PENDING);
+                    event.setState(State.PENDING);
                     break;
                 case CANCEL_REVIEW:
-                    event.setState(EventState.CANCELED);
+                    event.setState(State.CANCELED);
                     break;
             }
         }
@@ -262,14 +292,14 @@ public class EventServiceImpl implements EventService {
     public EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest updateEventAdminRequest) {
         Event event = takeEventById(eventId);
 
-        if (!event.getState().equals(EventState.PENDING)
-                && updateEventAdminRequest.getStateAction() == EventStateUpdate.PUBLISH_EVENT) {
+        if (!event.getState().equals(State.PENDING)
+                && updateEventAdminRequest.getStateAction() == AdminUpdateState.PUBLISH_EVENT) {
             throw new DataValidationException("Cannot publish the event because it's not in the right state: " +
                     event.getState());
         }
 
-        if (event.getState().equals(EventState.PUBLISHED)
-                && updateEventAdminRequest.getStateAction() == EventStateUpdate.REJECT_EVENT) {
+        if (event.getState().equals(State.PUBLISHED)
+                && updateEventAdminRequest.getStateAction() == AdminUpdateState.REJECT_EVENT) {
             throw new DataValidationException("Cannot reject the event because it's not in the right state: " +
                     event.getState());
         }
@@ -291,11 +321,11 @@ public class EventServiceImpl implements EventService {
         if (updateEventAdminRequest.getStateAction() != null) {
             switch (updateEventAdminRequest.getStateAction()) {
                 case PUBLISH_EVENT:
-                    event.setState(EventState.PUBLISHED);
+                    event.setState(State.PUBLISHED);
                     event.setPublishedOn(publishedOn);
                     break;
                 case REJECT_EVENT:
-                    event.setState(EventState.CANCELED);
+                    event.setState(State.CANCELED);
                     break;
             }
         }
@@ -425,6 +455,12 @@ public class EventServiceImpl implements EventService {
         }
         if (updateEventRequest.getRequestModeration() != null) {
             event.setRequestModeration(updateEventRequest.getRequestModeration());
+        }
+    }
+
+    private void checkEventIsPublished(Event event) {
+        if (!event.getState().equals(State.PUBLISHED)) {
+            throw new DataNotFoundException("Event must be published");
         }
     }
 }

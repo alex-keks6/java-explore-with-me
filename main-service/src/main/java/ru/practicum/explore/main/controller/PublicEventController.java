@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.explore.main.dto.CommentDto;
 import ru.practicum.explore.main.dto.EventFullDto;
 import ru.practicum.explore.main.dto.EventShortDto;
 import ru.practicum.explore.main.dto.PublicEventSearchParameterDto;
@@ -47,5 +48,16 @@ public class PublicEventController {
     public EventFullDto getEvent(@Positive @PathVariable Long id,
                                  HttpServletRequest request) {
         return eventService.getEvent(id, request);
+    }
+
+    @GetMapping("/{eventId}/comments")
+    public List<CommentDto> getEventComments(@Positive @PathVariable Long eventId) {
+        return eventService.getEventComments(eventId);
+    }
+
+    @GetMapping("/{eventId}/comments/{commentId}")
+    public CommentDto getEventComment(@Positive @PathVariable Long eventId,
+                                      @Positive @PathVariable Long commentId) {
+        return eventService.getEventComment(eventId, commentId);
     }
 }
