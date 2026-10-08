@@ -15,6 +15,10 @@ public interface EventService {
 
     EventFullDto getEvent(Long eventId, HttpServletRequest request);
 
+    List<CommentDto> getEventComments(Long eventId);
+
+    CommentDto getEventComment(Long eventId, Long commentId);
+
     List<EventShortDto> getOwnEventsByUser(Long userId, Integer from, Integer size);
 
     EventFullDto createEventByUser(Long userId, NewEventDto newEventDto);

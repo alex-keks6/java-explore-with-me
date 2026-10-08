@@ -1,17 +1,16 @@
 package ru.practicum.explore.main.request;
 
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import lombok.extern.jackson.Jacksonized;
-import ru.practicum.explore.main.enums.AdminUpdateState;
 
-@Jacksonized
 @Getter
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateEventAdminRequest extends UpdateEventRequest {
-    private AdminUpdateState stateAction;
+public class UpdateCommentRequest {
+    @Size(min = 1, max = 10000)
+    private String text;
 }

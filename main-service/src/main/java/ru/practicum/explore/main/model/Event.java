@@ -2,10 +2,9 @@ package ru.practicum.explore.main.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import ru.practicum.explore.main.enums.EventState;
+import ru.practicum.explore.main.enums.State;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Getter
 @Setter
@@ -49,7 +48,7 @@ public class Event {
     private Boolean requestModeration;
     @Enumerated(EnumType.STRING)
     @Column(name = "current_state", nullable = false)
-    private EventState state;
+    private State state;
     @Column(name = "title", nullable = false)
     private String title;
     @ManyToOne
