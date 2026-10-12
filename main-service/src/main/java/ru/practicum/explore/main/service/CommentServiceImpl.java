@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.practicum.explore.main.dto.AdminCommentSearchParameterDto;
 import ru.practicum.explore.main.dto.CommentDto;
 import ru.practicum.explore.main.dto.NewCommentDto;
+import ru.practicum.explore.main.enums.AdminUpdateState;
 import ru.practicum.explore.main.enums.State;
 import ru.practicum.explore.main.exception.DataNotFoundException;
 import ru.practicum.explore.main.exception.DataValidationException;
@@ -46,8 +47,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentDto getOwnCommentByUser(Long userId, Long commentId) {
         userService.checkExistsUserById(userId);
-
-        Comment comment = takeCommentById(commentId);
+        
+        Comment comment = takeCommentByUserIdAndId(userId, commentId);
 
         return CommentMapper.mapCommentToDto(comment);
     }
@@ -75,9 +76,11 @@ public class CommentServiceImpl implements CommentService {
     public CommentDto updateOwnCommentByUser(Long userId, Long commentId,
                                              UpdateCommentUserRequest updateCommentUserRequest) {
         userService.checkExistsUserById(userId);
-        Comment comment = takeCommentById(commentId);
-
-        updateCommentByRequest(comment, updateCommentUserRequest);
+        
+        Comment comment = takeCommentByUserIdAndId(userId, commentId);
+        
+        Boolean isCommentUpdate;
+        isCommentUpdate = updateCommentByRequest(comment, updateCommentUserRequest);
         if (updateCommentUserRequest.getStateAction() != null) {
             switch (updateCommentUserRequest.getStateAction()) {
                 case SEND_TO_REVIEW:
@@ -87,6 +90,8 @@ public class CommentServiceImpl implements CommentService {
                     comment.setState(State.CANCELED);
                     break;
             }
+        } else if (isCommentUpdate) {
+            comment.setState(State.PENDING);
         }
 
         return CommentMapper.mapCommentToDto(commentRepository.save(comment));
@@ -111,6 +116,18 @@ public class CommentServiceImpl implements CommentService {
     public CommentDto updateCommentByAdmin(Long commentId, UpdateCommentAdminRequest updateCommentAdminRequest) {
         Comment comment = takeCommentById(commentId);
 
+        if (comment.getState() != State.PENDING
+                && updateCommentAdminRequest.getStateAction() == AdminUpdateState.PUBLISH_EVENT) {
+            throw new DataValidationException("Cannot publish the comment because it's not in the right state: " +
+                    comment.getState());
+        }
+
+        if (comment.getState() == State.PUBLISHED
+                && updateCommentAdminRequest.getStateAction() == AdminUpdateState.REJECT_EVENT) {
+            throw new DataValidationException("Cannot reject the comment because it's not in the right state: " +
+                    comment.getState());
+        }
+        
         updateCommentByRequest(comment, updateCommentAdminRequest);
         if (updateCommentAdminRequest.getStateAction() != null) {
             switch (updateCommentAdminRequest.getStateAction()) {
@@ -139,16 +156,25 @@ public class CommentServiceImpl implements CommentService {
                 new DataNotFoundException("Comment with id=" + commentId + " was not found"));
     }
 
+    private Comment takeCommentByUserIdAndId(Long userId, Long commentId) {
+        return commentRepository.findByCommenterIdAndId(userId, commentId).orElseThrow(() ->
+                new DataNotFoundException("Comment with id=" + commentId + " and userId=" + userId  + " was not found"));
+    }
+
     private void checkCorrectPageParameters(Integer from, Integer size) {
         if (from % size != 0) {
             throw new DataValidationException("from=" + from + " and size=" + size + " is incorrect");
         }
     }
 
-    private void updateCommentByRequest(Comment comment, UpdateCommentRequest updateCommentRequest) {
+    private Boolean updateCommentByRequest(Comment comment, UpdateCommentRequest updateCommentRequest) {
+        Boolean isCommentUpdate = false;
+        
         if (updateCommentRequest.getText() != null) {
             comment.setText(updateCommentRequest.getText());
+            isCommentUpdate = true;
         }
+        return isCommentUpdate;
     }
 
     private void checkExistsCommentById(Long commentId) {

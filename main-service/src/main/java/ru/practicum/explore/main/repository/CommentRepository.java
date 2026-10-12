@@ -6,9 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import ru.practicum.explore.main.enums.State;
 import ru.practicum.explore.main.model.Comment;
+import ru.practicum.explore.main.model.Event;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     Page<Comment> findAllByCommenterIdOrderByCreatedOnDesc(Long userId, Pageable pageable);
@@ -24,4 +26,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
                                         LocalDateTime rangeStart, LocalDateTime rangeEnd, Pageable page);
 
     List<Comment> findAllByEventIdAndStateOrderByPublishedOnDesc(Long eventId, State state);
+
+    Optional<Comment> findByCommenterIdAndId(Long userId, Long commentId);
 }
