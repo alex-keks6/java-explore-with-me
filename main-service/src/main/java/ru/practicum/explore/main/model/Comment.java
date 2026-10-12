@@ -19,10 +19,10 @@ public class Comment {
     private Long id;
     @Column(name = "text", nullable = false)
     private String text;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User commenter;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", nullable = false)
     private Event event;
     @Column(name = "created_on", nullable = false)
