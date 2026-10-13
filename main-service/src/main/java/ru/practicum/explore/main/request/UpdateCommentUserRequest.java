@@ -1,15 +1,18 @@
 package ru.practicum.explore.main.request;
 
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-import ru.practicum.explore.main.enums.UserUpdateState;
+import ru.practicum.explore.main.enums.UserCommentUpdateState;
 
 @Getter
-@SuperBuilder
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateCommentUserRequest extends UpdateCommentRequest {
-    private UserUpdateState stateAction;
+public class UpdateCommentUserRequest {
+    @Size(min = 1, max = 10000)
+    private String text;
+    private UserCommentUpdateState stateAction;
 }

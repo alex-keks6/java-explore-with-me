@@ -1,15 +1,15 @@
 package ru.practicum.explore.main.request;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-import ru.practicum.explore.main.enums.AdminUpdateState;
+import ru.practicum.explore.main.enums.AdminCommentUpdateState;
 
 @Getter
-@SuperBuilder
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateCommentAdminRequest extends UpdateCommentRequest {
-    private AdminUpdateState stateAction;
+public class UpdateCommentAdminRequest {
+    private AdminCommentUpdateState stateAction;
 }

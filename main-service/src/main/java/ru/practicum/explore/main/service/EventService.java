@@ -15,10 +15,6 @@ public interface EventService {
 
     EventFullDto getEvent(Long eventId, HttpServletRequest request);
 
-    List<CommentDto> getEventComments(Long eventId);
-
-    CommentDto getEventComment(Long eventId, Long commentId);
-
     List<EventShortDto> getOwnEventsByUser(Long userId, Integer from, Integer size);
 
     EventFullDto createEventByUser(Long userId, NewEventDto newEventDto);
@@ -38,4 +34,6 @@ public interface EventService {
     EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest updateEventAdminRequest);
 
     Event takeEventById(Long eventId);
+
+    void checkEventIsPublished(Event event);
 }

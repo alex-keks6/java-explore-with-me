@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
-import ru.practicum.explore.main.enums.UserUpdateState;
+import ru.practicum.explore.main.enums.UserEventUpdateState;
 
 @Jacksonized
 @Getter
@@ -13,5 +13,5 @@ import ru.practicum.explore.main.enums.UserUpdateState;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateEventUserRequest extends UpdateEventRequest {
-    private UserUpdateState stateAction;
+    private UserEventUpdateState stateAction;
 }

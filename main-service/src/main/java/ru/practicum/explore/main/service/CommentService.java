@@ -10,6 +10,10 @@ import ru.practicum.explore.main.request.UpdateCommentUserRequest;
 import java.util.List;
 
 public interface CommentService {
+    List<CommentDto> getEventComments(Long eventId, Integer from, Integer size);
+
+    CommentDto getEventComment(Long eventId, Long commentId);
+
     List<CommentDto> getOwnCommentsByUser(Long userId, Integer from, Integer size);
 
     CommentDto getOwnCommentByUser(Long userId, Long commentId);
@@ -17,6 +21,8 @@ public interface CommentService {
     CommentDto createCommentByUser(Long userId, Long eventId, NewCommentDto newCommentDto);
 
     CommentDto updateOwnCommentByUser(Long userId, Long commentId, UpdateCommentUserRequest updateCommentUserRequest);
+
+    void deleteCommentByUser(Long userId, Long commentId);
 
     List<CommentDto> getCommentsByAdmin(AdminCommentSearchParameterDto searchParameter);
 

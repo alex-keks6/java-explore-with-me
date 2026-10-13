@@ -6,8 +6,9 @@ import org.springframework.stereotype.Service;
 import ru.practicum.explore.main.dto.AdminCommentSearchParameterDto;
 import ru.practicum.explore.main.dto.CommentDto;
 import ru.practicum.explore.main.dto.NewCommentDto;
-import ru.practicum.explore.main.enums.AdminUpdateState;
+import ru.practicum.explore.main.enums.AdminCommentUpdateState;
 import ru.practicum.explore.main.enums.State;
+import ru.practicum.explore.main.exception.DataBadRequestException;
 import ru.practicum.explore.main.exception.DataNotFoundException;
 import ru.practicum.explore.main.exception.DataValidationException;
 import ru.practicum.explore.main.mapper.CommentMapper;
@@ -17,7 +18,6 @@ import ru.practicum.explore.main.model.User;
 import ru.practicum.explore.main.repository.CommentRepository;
 import ru.practicum.explore.main.repository.EventRepository;
 import ru.practicum.explore.main.request.UpdateCommentAdminRequest;
-import ru.practicum.explore.main.request.UpdateCommentRequest;
 import ru.practicum.explore.main.request.UpdateCommentUserRequest;
 
 import java.time.LocalDateTime;
@@ -27,14 +27,43 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
     private final UserService userService;
+    private final EventService eventService;
     private final CommentRepository commentRepository;
     private final EventRepository eventRepository;
 
     @Override
+    public List<CommentDto> getEventComments(Long eventId, Integer from, Integer size) {
+        Event event = eventService.takeEventById(eventId);
+
+        eventService.checkEventIsPublished(event);
+
+        PageRequest page = PageRequest.of(from > 0 ? from / size : 0, size);
+
+        List<Comment> commentList = commentRepository.findAllByEventIdAndStateOrderByPublishedOnDesc(eventId,
+                State.PUBLISHED, page).getContent();
+
+        return commentList.stream()
+                .map(CommentMapper::mapCommentToDto)
+                .toList();
+    }
+
+    @Override
+    public CommentDto getEventComment(Long eventId, Long commentId) {
+        Event event = eventService.takeEventById(eventId);
+
+        eventService.checkEventIsPublished(event);
+
+        Comment comment = takeCommentByEventIdAndId(eventId, commentId);
+        if (comment.getState() != State.PUBLISHED) {
+            throw new DataNotFoundException("Comment must be published");
+        }
+
+        return CommentMapper.mapCommentToDto(comment);
+    }
+
+    @Override
     public List<CommentDto> getOwnCommentsByUser(Long userId, Integer from, Integer size) {
         userService.checkExistsUserById(userId);
-
-        checkCorrectPageParameters(from, size);
 
         PageRequest page = PageRequest.of(from > 0 ? from / size : 0, size);
         List<Comment> commentList = commentRepository.findAllByCommenterIdOrderByCreatedOnDesc(userId, page).getContent();
@@ -47,7 +76,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentDto getOwnCommentByUser(Long userId, Long commentId) {
         userService.checkExistsUserById(userId);
-        
+
         Comment comment = takeCommentByUserIdAndId(userId, commentId);
 
         return CommentMapper.mapCommentToDto(comment);
@@ -76,11 +105,20 @@ public class CommentServiceImpl implements CommentService {
     public CommentDto updateOwnCommentByUser(Long userId, Long commentId,
                                              UpdateCommentUserRequest updateCommentUserRequest) {
         userService.checkExistsUserById(userId);
-        
+
+        if (updateCommentUserRequest.getText() != null && updateCommentUserRequest.getText().isBlank()) {
+            throw new DataBadRequestException("Update text must contain minimum 1 non‑space character.");
+        }
+
         Comment comment = takeCommentByUserIdAndId(userId, commentId);
-        
-        Boolean isCommentUpdate;
-        isCommentUpdate = updateCommentByRequest(comment, updateCommentUserRequest);
+
+        Boolean isCommentUpdate = false;
+
+        if (updateCommentUserRequest.getText() != null) {
+            comment.setText(updateCommentUserRequest.getText());
+            isCommentUpdate = true;
+        }
+
         if (updateCommentUserRequest.getStateAction() != null) {
             switch (updateCommentUserRequest.getStateAction()) {
                 case SEND_TO_REVIEW:
@@ -98,8 +136,13 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    public void deleteCommentByUser(Long userId, Long commentId) {
+        checkExistsCommentByUserIdAndId(userId, commentId);
+        commentRepository.deleteById(commentId);
+    }
+
+    @Override
     public List<CommentDto> getCommentsByAdmin(AdminCommentSearchParameterDto searchParameter) {
-        checkCorrectPageParameters(searchParameter.getFrom(), searchParameter.getSize());
 
         PageRequest page = PageRequest.of(searchParameter.getFrom() > 0 ?
                 searchParameter.getFrom() / searchParameter.getSize() : 0, searchParameter.getSize());
@@ -117,25 +160,24 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = takeCommentById(commentId);
 
         if (comment.getState() != State.PENDING
-                && updateCommentAdminRequest.getStateAction() == AdminUpdateState.PUBLISH_EVENT) {
+                && updateCommentAdminRequest.getStateAction() == AdminCommentUpdateState.PUBLISH_COMMENT) {
             throw new DataValidationException("Cannot publish the comment because it's not in the right state: " +
                     comment.getState());
         }
 
         if (comment.getState() == State.PUBLISHED
-                && updateCommentAdminRequest.getStateAction() == AdminUpdateState.REJECT_EVENT) {
+                && updateCommentAdminRequest.getStateAction() == AdminCommentUpdateState.REJECT_COMMENT) {
             throw new DataValidationException("Cannot reject the comment because it's not in the right state: " +
                     comment.getState());
         }
-        
-        updateCommentByRequest(comment, updateCommentAdminRequest);
+
         if (updateCommentAdminRequest.getStateAction() != null) {
             switch (updateCommentAdminRequest.getStateAction()) {
-                case PUBLISH_EVENT:
+                case PUBLISH_COMMENT:
                     comment.setState(State.PUBLISHED);
                     comment.setPublishedOn(LocalDateTime.now());
                     break;
-                case REJECT_EVENT:
+                case REJECT_COMMENT:
                     comment.setState(State.CANCELED);
                     break;
             }
@@ -158,23 +200,18 @@ public class CommentServiceImpl implements CommentService {
 
     private Comment takeCommentByUserIdAndId(Long userId, Long commentId) {
         return commentRepository.findByCommenterIdAndId(userId, commentId).orElseThrow(() ->
-                new DataNotFoundException("Comment with id=" + commentId + " and userId=" + userId  + " was not found"));
+                new DataNotFoundException("Comment with id=" + commentId + " and userId=" + userId + " was not found"));
     }
 
-    private void checkCorrectPageParameters(Integer from, Integer size) {
-        if (from % size != 0) {
-            throw new DataValidationException("from=" + from + " and size=" + size + " is incorrect");
-        }
+    private Comment takeCommentByEventIdAndId(Long eventId, Long commentId) {
+        return commentRepository.findByEventIdAndId(eventId, commentId).orElseThrow(() ->
+                new DataNotFoundException("Comment with id=" + commentId + " and eventId=" + eventId + " was not found"));
     }
 
-    private Boolean updateCommentByRequest(Comment comment, UpdateCommentRequest updateCommentRequest) {
-        Boolean isCommentUpdate = false;
-        
-        if (updateCommentRequest.getText() != null) {
-            comment.setText(updateCommentRequest.getText());
-            isCommentUpdate = true;
+    private void checkExistsCommentByUserIdAndId(Long userId, Long commentId) {
+        if (!commentRepository.existsByCommenterIdAndId(userId, commentId)) {
+            throw new DataNotFoundException("Comment with id=" + commentId + " and userId=" + userId + " was not found");
         }
-        return isCommentUpdate;
     }
 
     private void checkExistsCommentById(Long commentId) {

@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import ru.practicum.explore.main.enums.State;
 import ru.practicum.explore.main.model.Comment;
-import ru.practicum.explore.main.model.Event;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,11 +37,19 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             "commenter",
             "event"
     })
-    List<Comment> findAllByEventIdAndStateOrderByPublishedOnDesc(Long eventId, State state);
+    Page<Comment> findAllByEventIdAndStateOrderByPublishedOnDesc(Long eventId, State state, Pageable page);
 
     @EntityGraph(attributePaths = {
             "commenter",
             "event"
     })
     Optional<Comment> findByCommenterIdAndId(Long userId, Long commentId);
+
+    @EntityGraph(attributePaths = {
+            "commenter",
+            "event"
+    })
+    Optional<Comment> findByEventIdAndId(Long eventId, Long commentId);
+
+    Boolean existsByCommenterIdAndId(Long userId, Long commentId);
 }

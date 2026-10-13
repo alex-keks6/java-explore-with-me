@@ -42,7 +42,7 @@ public class AdminCommentController {
     }
 
     @PatchMapping("/{commentId}")
-    public CommentDto updateCommentByAdmin(@PathVariable Long commentId,
+    public CommentDto updateCommentByAdmin(@Positive @PathVariable Long commentId,
                                            @Valid @RequestBody UpdateCommentAdminRequest updateCommentAdminRequest) {
         return commentService.updateCommentByAdmin(commentId, updateCommentAdminRequest);
     }

@@ -35,7 +35,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "category",
             "initiator"
     })
-    @Query("SELECT e FROM Event e " +
+    @Query("SELECT e " +
+            "FROM Event e " +
             "WHERE e.state = :state " +
             "AND (cast(:text as string) IS NULL OR LOWER(e.annotation) LIKE LOWER(CONCAT('%', cast(:text as string), '%')) " +
             "                   OR LOWER(e.description) LIKE LOWER(CONCAT('%', cast(:text as string), '%'))) " +
@@ -50,14 +51,11 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     Boolean existsByCategoryId(Long categoryId);
 
-    @Query(value = "SELECT * " +
-            "FROM events AS ev " +
-            "WHERE ev.user_id = :userId " +
-            "ORDER BY ev.event_date " +
-            "OFFSET :from " +
-            "LIMIT :size",
-            nativeQuery = true)
-    List<Event> findAllByUserIdWithOffsetAndLimit(Long userId, Integer from, Integer size);
+    @Query("SELECT ev " +
+            "FROM Event AS ev " +
+            "WHERE ev.initiator.id = :userId " +
+            "ORDER BY ev.eventDate")
+    Page<Event> findAllByUserIdWithOffsetAndLimit(Long userId, Pageable pageable);
 
     Optional<Event> findByInitiatorIdAndId(Long userId, Long eventId);
 

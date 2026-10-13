@@ -50,4 +50,11 @@ public class PrivateCommentController {
                                              @Valid @RequestBody UpdateCommentUserRequest updateCommentUserRequest) {
         return commentService.updateOwnCommentByUser(userId, commentId, updateCommentUserRequest);
     }
+
+    @DeleteMapping("/{commentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCommentByUser(@Positive @PathVariable Long userId,
+                                    @Positive @PathVariable Long commentId) {
+        commentService.deleteCommentByUser(userId, commentId);
+    }
 }

@@ -13,6 +13,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class NewCommentDto {
     @NotBlank
-    @Size(min = 1, max = 10000)
+    @Size(max = 10000)
     private String text;
 }
