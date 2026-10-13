@@ -334,7 +334,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/users/2/comments?eventId=2",
+              "raw": "http://localhost:8080/users/2/comments?eventId=108",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -348,7 +348,7 @@
               "query": [
                 {
                   "key": "eventId",
-                  "value": "2"
+                  "value": "108"
                 }
               ]
             }
