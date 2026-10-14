@@ -1,6 +1,7 @@
 package ru.practicum.explore.main.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.explore.main.dto.CompilationDto;
 import ru.practicum.explore.main.dto.NewCompilationDto;
@@ -27,10 +28,12 @@ public class CompilationServiceImpl implements CompilationService {
     public List<CompilationDto> getCompilations(Boolean pinned, Integer from, Integer size) {
         List<Compilation> compilationList;
 
+        PageRequest page = PageRequest.of(from > 0 ? from / size : 0, size);
+
         if (pinned == null) {
-            compilationList = compilationRepository.findAllWithOffsetAndLimit(from, size);
+            compilationList = compilationRepository.findAllWithOffsetAndLimit(page).getContent();
         } else {
-            compilationList = compilationRepository.findAllByPinnedWithOffsetAndLimit(pinned, from, size);
+            compilationList = compilationRepository.findAllByPinnedWithOffsetAndLimit(pinned, page).getContent();
         }
         return compilationList.stream()
                 .map(CompilationMapper::mapCompilationToDto)

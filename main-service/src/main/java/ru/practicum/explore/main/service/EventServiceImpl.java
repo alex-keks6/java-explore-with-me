@@ -47,12 +47,12 @@ public class EventServiceImpl implements EventService {
                 searchParameter.getFrom() / searchParameter.getSize() : 0, searchParameter.getSize());
         List<Event> eventList;
         if (searchParameter.getSort().equals(Sort.EVENT_DATE)) {
-            eventList = eventRepository.findAllByFiltersSortedByEventDate(EventState.PUBLISHED,
+            eventList = eventRepository.findAllByFiltersSortedByEventDate(State.PUBLISHED,
                     searchParameter.getText(), searchParameter.getCategories(), searchParameter.getPaid(),
                     searchParameter.getRangeStart(), searchParameter.getRangeEnd(), searchParameter.getOnlyAvailable(),
                     page).getContent();
         } else {
-            eventList = eventRepository.findAllByFilters(EventState.PUBLISHED, searchParameter.getText(),
+            eventList = eventRepository.findAllByFilters(State.PUBLISHED, searchParameter.getText(),
                     searchParameter.getCategories(), searchParameter.getPaid(), searchParameter.getRangeStart(),
                     searchParameter.getRangeEnd(), searchParameter.getOnlyAvailable(), page).getContent();
         }
@@ -78,9 +78,7 @@ public class EventServiceImpl implements EventService {
     public EventFullDto getEvent(Long eventId, HttpServletRequest request) {
         Event event = takeEventById(eventId);
 
-        if (!event.getState().equals(EventState.PUBLISHED)) {
-            throw new DataNotFoundException("Event must be published");
-        }
+        checkEventIsPublished(event);
 
         EventFullDto eventFullDto = EventMapper.mapEventToFullDto(event);
 
@@ -93,7 +91,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventShortDto> getOwnEventsByUser(Long userId, Integer from, Integer size) {
-        List<Event> eventList = eventRepository.findAllByUserIdWithOffsetAndLimit(userId, from, size);
+        PageRequest page = PageRequest.of(from > 0 ? from / size : 0, size);
+        List<Event> eventList = eventRepository.findAllByUserIdWithOffsetAndLimit(userId, page).getContent();
 
         List<EventShortDto> eventShortDtoList = eventList.stream()
                 .map(EventMapper::mapEventToShortDto)
@@ -114,7 +113,7 @@ public class EventServiceImpl implements EventService {
         event.setInitiator(userService.takeUserById(userId));
         event.setCategory(categoryService.takeCategoryById(newEventDto.getCategory()));
         event.setCreatedOn(LocalDateTime.now());
-        event.setState(EventState.PENDING);
+        event.setState(State.PENDING);
 
         return EventMapper.mapEventToFullDto(eventRepository.save(event));
     }
@@ -136,7 +135,7 @@ public class EventServiceImpl implements EventService {
 
         Event event = takeEventByUserIdAndId(userId, eventId);
 
-        if (event.getState().equals(EventState.PUBLISHED)) {
+        if (event.getState().equals(State.PUBLISHED)) {
             throw new DataValidationException("Only pending or canceled events can be changed");
         }
 
@@ -145,10 +144,10 @@ public class EventServiceImpl implements EventService {
         if (updateEventUserRequest.getStateAction() != null) {
             switch (updateEventUserRequest.getStateAction()) {
                 case SEND_TO_REVIEW:
-                    event.setState(EventState.PENDING);
+                    event.setState(State.PENDING);
                     break;
                 case CANCEL_REVIEW:
-                    event.setState(EventState.CANCELED);
+                    event.setState(State.CANCELED);
                     break;
             }
         }
@@ -262,14 +261,14 @@ public class EventServiceImpl implements EventService {
     public EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest updateEventAdminRequest) {
         Event event = takeEventById(eventId);
 
-        if (!event.getState().equals(EventState.PENDING)
-                && updateEventAdminRequest.getStateAction() == EventStateUpdate.PUBLISH_EVENT) {
+        if (!event.getState().equals(State.PENDING)
+                && updateEventAdminRequest.getStateAction() == AdminEventUpdateState.PUBLISH_EVENT) {
             throw new DataValidationException("Cannot publish the event because it's not in the right state: " +
                     event.getState());
         }
 
-        if (event.getState().equals(EventState.PUBLISHED)
-                && updateEventAdminRequest.getStateAction() == EventStateUpdate.REJECT_EVENT) {
+        if (event.getState().equals(State.PUBLISHED)
+                && updateEventAdminRequest.getStateAction() == AdminEventUpdateState.REJECT_EVENT) {
             throw new DataValidationException("Cannot reject the event because it's not in the right state: " +
                     event.getState());
         }
@@ -291,11 +290,11 @@ public class EventServiceImpl implements EventService {
         if (updateEventAdminRequest.getStateAction() != null) {
             switch (updateEventAdminRequest.getStateAction()) {
                 case PUBLISH_EVENT:
-                    event.setState(EventState.PUBLISHED);
+                    event.setState(State.PUBLISHED);
                     event.setPublishedOn(publishedOn);
                     break;
                 case REJECT_EVENT:
-                    event.setState(EventState.CANCELED);
+                    event.setState(State.CANCELED);
                     break;
             }
         }
@@ -314,6 +313,13 @@ public class EventServiceImpl implements EventService {
     public Event takeEventById(Long eventId) {
         return eventRepository.findById(eventId).orElseThrow(() ->
                 new DataNotFoundException("Event with id=" + eventId + " was not found"));
+    }
+
+    @Override
+    public void checkEventIsPublished(Event event) {
+        if (!event.getState().equals(State.PUBLISHED)) {
+            throw new DataNotFoundException("Event must be published");
+        }
     }
 
     private Event takeEventByUserIdAndId(Long userId, Long eventId) {

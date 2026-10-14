@@ -1,6 +1,7 @@
 package ru.practicum.explore.main.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.explore.main.dto.CategoryDto;
 import ru.practicum.explore.main.dto.NewCategoryDto;
@@ -49,7 +50,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryDto> getCategories(Integer from, Integer size) {
-        List<Category> categoryList = categoryRepository.findAllWithOffsetAndLimit(from, size);
+        PageRequest page = PageRequest.of(from > 0 ? from / size : 0, size);
+
+        List<Category> categoryList = categoryRepository.findAllWithOffsetAndLimit(page).getContent();
         return categoryList.stream()
                 .map(CategoryMapper::mapCategoryToDto)
                 .collect(Collectors.toList());

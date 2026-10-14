@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
-import ru.practicum.explore.main.enums.EventState;
+import ru.practicum.explore.main.enums.State;
 
 import java.time.LocalDateTime;
 
@@ -40,7 +40,7 @@ public class EventFullDto {
     private LocalDateTime publishedOn;
     @Builder.Default
     private Boolean requestModeration = true;
-    private EventState state;
+    private State state;
     @NotBlank
     private String title;
     @Builder.Default

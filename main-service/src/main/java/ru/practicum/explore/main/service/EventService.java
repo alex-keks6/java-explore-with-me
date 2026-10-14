@@ -34,4 +34,6 @@ public interface EventService {
     EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest updateEventAdminRequest);
 
     Event takeEventById(Long eventId);
+
+    void checkEventIsPublished(Event event);
 }

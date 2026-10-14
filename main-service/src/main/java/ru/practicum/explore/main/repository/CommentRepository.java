@@ -1,0 +1,55 @@
+package ru.practicum.explore.main.repository;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import ru.practicum.explore.main.enums.State;
+import ru.practicum.explore.main.model.Comment;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+public interface CommentRepository extends JpaRepository<Comment, Long> {
+    @EntityGraph(attributePaths = {
+            "commenter",
+            "event"
+    })
+    Page<Comment> findAllByCommenterIdOrderByCreatedOnDesc(Long userId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {
+            "commenter",
+            "event"
+    })
+    @Query("SELECT c FROM Comment c " +
+            "WHERE (:users IS NULL OR c.commenter.id IN :users) " +
+            "AND (:events IS NULL OR c.event.id IN :events) " +
+            "AND (:states IS NULL OR c.state IN :states) " +
+            "AND (cast(:rangeStart as timestamp) IS NULL OR c.createdOn >= :rangeStart) " +
+            "AND (cast(:rangeEnd as timestamp) IS NULL OR c.createdOn <= :rangeEnd) " +
+            "ORDER BY c.createdOn DESC")
+    Page<Comment> findAllByAdminFilters(List<Long> users, List<Long> events, List<State> states,
+                                        LocalDateTime rangeStart, LocalDateTime rangeEnd, Pageable page);
+
+    @EntityGraph(attributePaths = {
+            "commenter",
+            "event"
+    })
+    Page<Comment> findAllByEventIdAndStateOrderByPublishedOnDesc(Long eventId, State state, Pageable page);
+
+    @EntityGraph(attributePaths = {
+            "commenter",
+            "event"
+    })
+    Optional<Comment> findByCommenterIdAndId(Long userId, Long commentId);
+
+    @EntityGraph(attributePaths = {
+            "commenter",
+            "event"
+    })
+    Optional<Comment> findByEventIdAndId(Long eventId, Long commentId);
+
+    Boolean existsByCommenterIdAndId(Long userId, Long commentId);
+}

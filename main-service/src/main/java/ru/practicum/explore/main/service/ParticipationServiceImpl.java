@@ -3,8 +3,8 @@ package ru.practicum.explore.main.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.explore.main.dto.ParticipationRequestDto;
-import ru.practicum.explore.main.enums.EventState;
 import ru.practicum.explore.main.enums.ParticipationStatus;
+import ru.practicum.explore.main.enums.State;
 import ru.practicum.explore.main.exception.DataNotFoundException;
 import ru.practicum.explore.main.exception.DataValidationException;
 import ru.practicum.explore.main.mapper.ParticipationMapper;
@@ -47,7 +47,7 @@ public class ParticipationServiceImpl implements ParticipationService {
             throw new DataValidationException("Initiator cannot add a participation in their own event");
         }
 
-        if (!event.getState().equals(EventState.PUBLISHED)) {
+        if (!event.getState().equals(State.PUBLISHED)) {
             throw new DataValidationException("Event is not PUBLISHED");
         }
 

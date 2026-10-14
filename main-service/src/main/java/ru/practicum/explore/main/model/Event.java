@@ -2,10 +2,9 @@ package ru.practicum.explore.main.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import ru.practicum.explore.main.enums.EventState;
+import ru.practicum.explore.main.enums.State;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Getter
 @Setter
@@ -20,7 +19,7 @@ public class Event {
     private Long id;
     @Column(name = "annotation", nullable = false)
     private String annotation;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
     @Builder.Default
@@ -32,7 +31,7 @@ public class Event {
     private String description;
     @Column(name = "event_date", nullable = false)
     private LocalDateTime eventDate;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User initiator;
     @Column(name = "lat", nullable = false)
@@ -49,10 +48,10 @@ public class Event {
     private Boolean requestModeration;
     @Enumerated(EnumType.STRING)
     @Column(name = "current_state", nullable = false)
-    private EventState state;
+    private State state;
     @Column(name = "title", nullable = false)
     private String title;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "compilation_id")
     private Compilation compilation;
 }
